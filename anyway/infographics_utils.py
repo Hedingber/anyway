@@ -578,7 +578,7 @@ def stats_accidents_by_car_type_with_national_data(
 
 
 # the rain rate threshold after which we count the accident as a cause of the rain
-accident_rain_rate_threshold = 4
+ACCIDENT_RAIN_RATE_THRESHOLD = 4
 
 
 def stats_accidents_caused_by_rain_by_severity(location_info, start_time, end_time):
@@ -598,7 +598,7 @@ def stats_accidents_caused_by_rain_by_severity(location_info, start_time, end_ti
         severity_hebrew = accident["accident_severity_hebrew"]
         severity_to_severity_hebrew[severity] = severity_hebrew
         accidents_by_severity[severity] += 1
-        if accident["accident_rain_rate"] > accident_rain_rate_threshold:
+        if accident["accident_rain_rate"] > ACCIDENT_RAIN_RATE_THRESHOLD:
             rain_accidents_by_severity[severity] += 1
 
     stats = []
