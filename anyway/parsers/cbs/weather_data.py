@@ -1,13 +1,11 @@
 import logging
-from datetime import datetime
-
-import random
 
 from anyway.app_and_db import db
 from anyway.models import (
     AccidentMarker,
     AccidentWeather,
 )
+from anyway.parsers.cbs.weather_interpolator import get_weather
 
 
 def ensure_accidents_weather_data(start_date=None, filters=None):
@@ -30,11 +28,10 @@ def ensure_accidents_weather_data(start_date=None, filters=None):
         )
     accidents_weather_data = []
     for accident_marker in query.all():
-        rain_rate = compute_accident_rain_data(
+        weather_data = get_weather(
             accident_marker.latitude,
             accident_marker.longitude,
-            accident_marker.accident_hour,
-            accident_marker.accident_minute,
+            accident_marker.created.isoformat()
         )
         accidents_weather_data.append(
             {
@@ -42,7 +39,7 @@ def ensure_accidents_weather_data(start_date=None, filters=None):
                 "provider_and_id": accident_marker.provider_and_id,
                 "provider_code": accident_marker.provider_code,
                 "accident_year": accident_marker.accident_year,
-                "rain_rate": rain_rate,
+                "rain_rate": weather_data['rain'],
             }
         )
     if accidents_weather_data:
@@ -51,8 +48,3 @@ def ensure_accidents_weather_data(start_date=None, filters=None):
         db.session.commit()
     logging.debug("Finished filling accidents weather data")
     return len(accident_markers_to_update) if accident_markers_to_update else 0
-
-
-def compute_accident_rain_data(latitude, longitude, hour, minute):
-    logging.info("Mocking rain data computation")
-    return random.randint(0, 10)

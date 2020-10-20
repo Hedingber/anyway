@@ -9,9 +9,10 @@ from lxml import etree
 WEATHER_HISTORY_WINDOW = 60 * 60  # sec
 WEATHER_SAMPLING_INTERVAL = 10 * 60  # sec
 WEATHER_STATION_XML = "anyway/parsers/cbs/weather_stations.xml"
+DEFAULT_NUMBER_OF_INTERPOLATION_POINTS = 3
 
 
-def get_weather(latitude, longitude, timestamp, interpolation_points):
+def get_weather(latitude, longitude, timestamp, interpolation_points=DEFAULT_NUMBER_OF_INTERPOLATION_POINTS):
     timestamp = datetime.datetime.fromisoformat(timestamp)
 
     # Phase I: find N closest weather stations to target coordinates (N==interpolation_points)

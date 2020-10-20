@@ -25,6 +25,8 @@ class TestWeatherData:
             provider_and_id=0,
             provider_code=BE_CONST.CBS_ACCIDENT_TYPE_1_CODE,
             accident_year=2020,
+            latitude=32.0580,
+            longitude=34.7588,
         )
         if created:
             accident_marker.created = created
