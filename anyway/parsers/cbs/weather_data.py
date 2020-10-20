@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 import random
 
@@ -9,15 +10,19 @@ from anyway.models import (
 )
 
 
-def ensure_accidents_weather_data(filters=None):
+def ensure_accidents_weather_data(start_date=None, filters=None):
     """
+    :param start_date: Add start date filter to the query that lists accident markers to add weather data to
     :param filters: additional filters to add to the query that lists accident markers to add weather data to
-    This is used mainly for testing
+    This is used mainly for testing - format DD-MM-YYYY
     :returns: int representing the number of accidents to which weather data was added
     """
-    logging.info(f"Ensuring accidents weather data {filters}")
+    logging.info(f"Ensuring accidents weather data {start_date} {filters}")
     query = db.session.query(AccidentMarker).filter(AccidentMarker.weather_data == None)
-    if filters:
+    if start_date:
+        start_date = datetime(day=int(start_date.split('-')[0]), month=int(start_date.split('-')[1]), year=int(start_date.split('-')[2]))
+        query = query.filter(AccidentMarker.created > start_date)
+    if filters is not None:
         query = query.filter(*filters)
     accident_markers_to_update = query.all()
     if accident_markers_to_update:
