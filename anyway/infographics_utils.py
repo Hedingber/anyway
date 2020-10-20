@@ -582,9 +582,7 @@ def stats_accidents_by_car_type_with_national_data(
 accident_rain_rate_threshold = 4
 
 
-def stats_accidents_caused_by_rain_by_severity(
-    location_info, start_time, end_time
-):
+def stats_accidents_caused_by_rain_by_severity(location_info, start_time, end_time):
     all_segment_accidents = get_accidents_stats(
         table_obj=InvolvedMarkerView,
         filters=location_info,
@@ -595,19 +593,23 @@ def stats_accidents_caused_by_rain_by_severity(
     accidents_by_severity = defaultdict(int)
     rain_accidents_by_severity = defaultdict(int)
     for accident in all_segment_accidents:
-        severity = accident['accident_severity_hebrew']
+        severity = accident["accident_severity_hebrew"]
         accidents_by_severity[severity] += 1
-        if accident['accident_rain_rate'] > accident_rain_rate_threshold:
+        if accident["accident_rain_rate"] > accident_rain_rate_threshold:
             rain_accidents_by_severity[severity] += 1
 
     stats = []
     for severity, rain_accidents_amount in rain_accidents_by_severity.items():
-        stats.append({
-            'severity': severity,
-            'severity_hebrew': severity,
-            'amount_of_accidents_caused_by_rain': rain_accidents_amount,
-            'accidents_caused_by_rain_percentage': int(rain_accidents_amount / accidents_by_severity[severity] * 100),
-        })
+        stats.append(
+            {
+                "severity": severity,
+                "severity_hebrew": severity,
+                "amount_of_accidents_caused_by_rain": rain_accidents_amount,
+                "accidents_caused_by_rain_percentage": int(
+                    rain_accidents_amount / accidents_by_severity[severity] * 100
+                ),
+            }
+        )
 
     return stats
 
@@ -862,8 +864,7 @@ def create_infographics_data(news_flash_id, number_of_years_ago):
         name="rain_accidents_by_severity",
         rank=18,
         items=stats_accidents_caused_by_rain_by_severity(location_info, start_time, end_time),
-        text={"title": 'תאונות שהתרחשו בזמן גשם במקטע ' + location_info['road_segment_name']},
-
+        text={"title": "תאונות שהתרחשו בזמן גשם במקטע " + location_info["road_segment_name"]},
     )
     output["widgets"].append(rain_accidents_by_severity.serialize())
 

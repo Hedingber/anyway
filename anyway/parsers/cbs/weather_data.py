@@ -20,20 +20,29 @@ def ensure_accidents_weather_data(start_date=None, filters=None):
     logging.info(f"Ensuring accidents weather data {start_date} {filters}")
     query = db.session.query(AccidentMarker).filter(AccidentMarker.weather_data == None)
     if start_date:
-        start_date = datetime(day=int(start_date.split('-')[0]), month=int(start_date.split('-')[1]), year=int(start_date.split('-')[2]))
+        start_date = datetime(
+            day=int(start_date.split("-")[0]),
+            month=int(start_date.split("-")[1]),
+            year=int(start_date.split("-")[2]),
+        )
         query = query.filter(AccidentMarker.created > start_date)
     if filters is not None:
         query = query.filter(*filters)
     accident_markers_to_update = query.all()
     if accident_markers_to_update:
-        logging.debug(f"Found accident markers without weather data. {len(accident_markers_to_update)}")
+        logging.debug(
+            f"Found accident markers without weather data. {len(accident_markers_to_update)}"
+        )
     accidents_weather_data = []
     for accident_marker in query.all():
-        rain_rate = compute_accident_rain_data(accident_marker.latitude,
-                                               accident_marker.longitude,
-                                               accident_marker.accident_hour,
-                                               accident_marker.accident_minute)
-        accidents_weather_data.append({
+        rain_rate = compute_accident_rain_data(
+            accident_marker.latitude,
+            accident_marker.longitude,
+            accident_marker.accident_hour,
+            accident_marker.accident_minute,
+        )
+        accidents_weather_data.append(
+            {
                 "accident_id": accident_marker.id,
                 "provider_and_id": accident_marker.provider_and_id,
                 "provider_code": accident_marker.provider_code,
@@ -52,4 +61,3 @@ def ensure_accidents_weather_data(start_date=None, filters=None):
 def compute_accident_rain_data(latitude, longitude, hour, minute):
     logging.info("Mocking rain data computation")
     return random.randint(0, 10)
-
