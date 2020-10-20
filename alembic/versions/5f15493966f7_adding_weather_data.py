@@ -1,14 +1,14 @@
 """Adding weather data
 
-Revision ID: d890089e39df
-Revises: cac481832078
-Create Date: 2020-10-20 16:04:45.066175
+Revision ID: 5f15493966f7
+Revises: 9687ef04f99d
+Create Date: 2020-10-20 21:30:51.699025
 
 """
 
 # revision identifiers, used by Alembic.
-revision = 'd890089e39df'
-down_revision = 'cac481832078'
+revision = '5f15493966f7'
+down_revision = '9687ef04f99d'
 branch_labels = None
 depends_on = None
 
