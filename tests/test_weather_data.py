@@ -1,5 +1,7 @@
 import logging
 
+from sqlalchemy import func
+
 from anyway.app_and_db import db
 from anyway.backend_constants import BE_CONST
 from anyway.models import (
@@ -13,10 +15,12 @@ class TestWeatherData:
 
     def _insert_accident_marker(self):
         logging.info("Inserting test accident marker")
-        id = db.session.query(AccidentMarker).count() + 1
-        logging.debug(f"Calculated id for accident marker: {id}")
+
+        # to not conflict with existing ids find max value and add one
+        accident_marker_id = db.session.query(func.max(AccidentMarker.id)).one()[0] + 1
+        logging.debug(f"Calculated id for accident marker: {accident_marker_id}")
         accident_marker = AccidentMarker(
-            id=id,
+            id=accident_marker_id,
             provider_and_id=0,
             provider_code=BE_CONST.CBS_ACCIDENT_TYPE_1_CODE,
             accident_year=2020,
@@ -25,7 +29,7 @@ class TestWeatherData:
         db.session.add(accident_marker)
         db.session.commit()
 
-        return id
+        return accident_marker_id
 
     def test_ensure_accidents_weather_data(self):
         accident_marker_id = self._insert_accident_marker()
