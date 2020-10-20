@@ -152,7 +152,7 @@ def get_top_road_segments_accidents_per_km(
 
 
 def get_accidents_stats(
-    table_obj, filters=None, group_by=None, count=None, start_time=None, end_time=None
+    table_obj, filters=None, group_by=None, count=None, start_time=None, end_time=None, raw=False
 ):
     filters = filters or {}
     filters["provider_code"] = [
@@ -166,9 +166,10 @@ def get_accidents_stats(
         query = query.with_entities(group_by, func.count(count))
     df = pd.read_sql_query(query.statement, query.session.bind)
     df.rename(columns={"count_1": "count"}, inplace=True)  # pylint: disable=no-member
-    df.columns = [c.replace("_hebrew", "") for c in df.columns]
+    if not raw:
+        df.columns = [c.replace("_hebrew", "") for c in df.columns]
     return (  # pylint: disable=no-member
-        df.to_dict(orient="records") if group_by or count else df.to_dict()
+        df.to_dict(orient="records")
     )
 
 
@@ -584,16 +585,20 @@ accident_rain_rate_threshold = 4
 
 def stats_accidents_caused_by_rain_by_severity(location_info, start_time, end_time):
     all_segment_accidents = get_accidents_stats(
-        table_obj=InvolvedMarkerView,
+        table_obj=AccidentMarkerView,
         filters=location_info,
         start_time=start_time,
         end_time=end_time,
+        raw=True,
     )
 
+    severity_to_severity_hebrew = {}
     accidents_by_severity = defaultdict(int)
     rain_accidents_by_severity = defaultdict(int)
     for accident in all_segment_accidents:
-        severity = accident["accident_severity_hebrew"]
+        severity = accident["accident_severity"]
+        severity_hebrew = accident["accident_severity_hebrew"]
+        severity_to_severity_hebrew[severity] = severity_hebrew
         accidents_by_severity[severity] += 1
         if accident["accident_rain_rate"] > accident_rain_rate_threshold:
             rain_accidents_by_severity[severity] += 1
@@ -603,7 +608,7 @@ def stats_accidents_caused_by_rain_by_severity(location_info, start_time, end_ti
         stats.append(
             {
                 "severity": severity,
-                "severity_hebrew": severity,
+                "severity_hebrew": severity_to_severity_hebrew[severity],
                 "amount_of_accidents_caused_by_rain": rain_accidents_amount,
                 "accidents_caused_by_rain_percentage": int(
                     rain_accidents_amount / accidents_by_severity[severity] * 100
