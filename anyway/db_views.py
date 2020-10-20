@@ -56,6 +56,7 @@ class Views(object):
                                     markers.km,
                                     markers.km_raw,
                                     markers.km_accurate,
+                                    accident_weathers.rain_rate as accident_rain_rate,
                                     road_segments.segment_id as road_segment_id,
                                     road_segments.segment as road_segment_number,
                                     road_segments.from_name || ' - ' || road_segments.to_name as road_segment_name,
@@ -121,6 +122,7 @@ class Views(object):
                                      LEFT JOIN road_light ON markers.road_light = road_light.id AND markers.accident_year = road_light.year AND markers.provider_code = road_light.provider_code
                                      LEFT JOIN road_control ON markers.road_control = road_control.id AND markers.accident_year = road_control.year AND markers.provider_code = road_control.provider_code
                                      LEFT JOIN weather ON markers.weather = weather.id AND markers.accident_year = weather.year AND markers.provider_code = weather.provider_code
+                                     LEFT JOIN accident_weathers ON accident_weathers.provider_code = markers.provider_code AND accident_weathers.accident_id = markers.id AND accident_weathers.accident_year = markers.accident_year
                                      LEFT JOIN road_surface ON markers.road_surface = road_surface.id AND markers.accident_year = road_surface.year AND markers.provider_code = road_surface.provider_code
                                      LEFT JOIN road_object ON markers.road_object = road_object.id AND markers.accident_year = road_object.year AND markers.provider_code = road_object.provider_code
                                      LEFT JOIN object_distance ON markers.object_distance = object_distance.id AND markers.accident_year = object_distance.year AND markers.provider_code = object_distance.provider_code
