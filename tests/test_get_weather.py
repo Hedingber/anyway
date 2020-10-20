@@ -1,5 +1,3 @@
-import logging
-
 import anyway.parsers.cbs.weather_interpolator as weather_interpolator
 
 
