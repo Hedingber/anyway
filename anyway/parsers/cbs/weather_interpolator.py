@@ -12,21 +12,28 @@ WEATHER_STATION_XML = "anyway/parsers/cbs/weather_stations.xml"
 DEFAULT_NUMBER_OF_INTERPOLATION_POINTS = 3
 
 
-def get_weather(latitude, longitude, timestamp, interpolation_points=DEFAULT_NUMBER_OF_INTERPOLATION_POINTS):
+def get_weather(
+    latitude, longitude, timestamp, interpolation_points=DEFAULT_NUMBER_OF_INTERPOLATION_POINTS
+):
     timestamp = datetime.datetime.fromisoformat(timestamp)
 
     # Phase I: find N closest weather stations to target coordinates (N==interpolation_points)
-    closest_stations = get_closest_stations(WEATHER_STATION_XML, latitude, longitude, interpolation_points)
+    closest_stations = get_closest_stations(
+        WEATHER_STATION_XML, latitude, longitude, interpolation_points
+    )
     logging.debug(f"Closest stations: {str(closest_stations)}")
 
     # Phase II: find weather history for each station
     for idx in range(len(closest_stations)):
-        closest_stations[idx]["weather"] = get_weather_at_station(closest_stations[idx]['id'], timestamp)
+        closest_stations[idx]["weather"] = get_weather_at_station(
+            closest_stations[idx]["id"], timestamp
+        )
 
     # Phase III: Calculate time weighted weather for each station based on weather history
     for idx in range(len(closest_stations)):
-        closest_stations[idx]["time_weighted_weather_parameters"] = \
-            weight_weather_parameters_in_time_domain(closest_stations[idx]["weather"])
+        closest_stations[idx][
+            "time_weighted_weather_parameters"
+        ] = weight_weather_parameters_in_time_domain(closest_stations[idx]["weather"])
 
     # Phase IV: Create distance/weather_param_value tuples for spatial interpolation
     weather_parameters_for_spatial_interpolation = {}
@@ -39,8 +46,13 @@ def get_weather(latitude, longitude, timestamp, interpolation_points=DEFAULT_NUM
     # Phase V: Find weather parameters at target location using
     # inverse distance weighted interpolation on station weather data
     weather_at_target = {}
-    for weather_parameter, distance_value_tuples in weather_parameters_for_spatial_interpolation.items():
-        weather_at_target[weather_parameter] = perform_inverse_distance_weighted_interpolation(distance_value_tuples)
+    for (
+        weather_parameter,
+        distance_value_tuples,
+    ) in weather_parameters_for_spatial_interpolation.items():
+        weather_at_target[weather_parameter] = perform_inverse_distance_weighted_interpolation(
+            distance_value_tuples
+        )
 
     logging.debug(f"Weather at target: {str(weather_at_target)}")
 
@@ -100,9 +112,9 @@ def get_distance(origin, destination):
 
     dlat = math.radians(lat2 - lat1)
     dlon = math.radians(lon2 - lon1)
-    a = (math.sin(dlat / 2) * math.sin(dlat / 2) +
-         math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) *
-         math.sin(dlon / 2) * math.sin(dlon / 2))
+    a = math.sin(dlat / 2) * math.sin(dlat / 2) + math.cos(math.radians(lat1)) * math.cos(
+        math.radians(lat2)
+    ) * math.sin(dlon / 2) * math.sin(dlon / 2)
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     d = radius * c
 
@@ -118,7 +130,9 @@ def get_closest_stations(weather_stations_locations_xml, latitude, longitude, nu
     target_location = (latitude, longitude)
     distances_to_weather_stations = {}
     for weather_station in weather_stations_locations:
-        distance_to_station = get_distance(target_location, (weather_station["latitude"], weather_station["longitude"]))
+        distance_to_station = get_distance(
+            target_location, (weather_station["latitude"], weather_station["longitude"])
+        )
         distances_to_weather_stations[distance_to_station] = weather_station
 
     # Sort the results
@@ -129,13 +143,14 @@ def get_closest_stations(weather_stations_locations_xml, latitude, longitude, nu
     closest_stations = []
     for _distance, weather_station in sorted_distances.items():
         weather_station.update({"distance": _distance})
-        closest_stations.append({
-            "id": weather_station["id"],
-            "name": weather_station["name"],
-
-            # to avoid "divide by zero" situations, round 0 to 0.01
-            "distance": max(0.01, _distance),
-        })
+        closest_stations.append(
+            {
+                "id": weather_station["id"],
+                "name": weather_station["name"],
+                # to avoid "divide by zero" situations, round 0 to 0.01
+                "distance": max(0.01, _distance),
+            }
+        )
 
         idx += 1
         if idx >= num_of_stations:
@@ -153,13 +168,15 @@ def get_weather_at_station(station_id, timestamp):
     # The API should return response with samples in 10min intervals
     idx = station_id
     for delta_sec in range(0, WEATHER_HISTORY_WINDOW, WEATHER_SAMPLING_INTERVAL):
-        results.append({
-            "timestamp": timestamp - datetime.timedelta(seconds=delta_sec),
-            "weather_parameters": {
-                "temperature": random.uniform(0, 45),
-                "rain": idx,
+        results.append(
+            {
+                "timestamp": timestamp - datetime.timedelta(seconds=delta_sec),
+                "weather_parameters": {
+                    "temperature": random.uniform(0, 45),
+                    "rain": idx,
+                },
             }
-        })
+        )
 
         idx += 2
 
@@ -176,8 +193,9 @@ def weight_weather_parameters_in_time_domain(weather_samples):
     for idx, weather_sample in enumerate(weather_samples):
         for parameter_name, parameter_value in weather_sample["weather_parameters"].items():
             if parameter_name in ["rain"]:
-                time_weighted_parameters[parameter_name] = time_weighted_parameters.get(parameter_name, 0) + \
-                                     parameter_value * weights[idx]
+                time_weighted_parameters[parameter_name] = (
+                    time_weighted_parameters.get(parameter_name, 0) + parameter_value * weights[idx]
+                )
 
     return time_weighted_parameters
 
@@ -189,7 +207,7 @@ def perform_inverse_distance_weighted_interpolation(distance_value_tuples):
     numerator = 0
     denominator = 0
     for distance, value in distance_value_tuples:
-        numerator += (value / distance)
-        denominator += (1 / distance)
+        numerator += value / distance
+        denominator += 1 / distance
 
     return numerator / denominator

@@ -29,9 +29,7 @@ def ensure_accidents_weather_data(start_date=None, filters=None):
     accidents_weather_data = []
     for accident_marker in query.all():
         weather_data = get_weather(
-            accident_marker.latitude,
-            accident_marker.longitude,
-            accident_marker.created.isoformat()
+            accident_marker.latitude, accident_marker.longitude, accident_marker.created.isoformat()
         )
         accidents_weather_data.append(
             {
@@ -39,7 +37,7 @@ def ensure_accidents_weather_data(start_date=None, filters=None):
                 "provider_and_id": accident_marker.provider_and_id,
                 "provider_code": accident_marker.provider_code,
                 "accident_year": accident_marker.accident_year,
-                "rain_rate": weather_data['rain'],
+                "rain_rate": weather_data["rain"],
             }
         )
     if accidents_weather_data:
