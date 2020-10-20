@@ -168,9 +168,7 @@ def get_accidents_stats(
     df.rename(columns={"count_1": "count"}, inplace=True)  # pylint: disable=no-member
     if not raw:
         df.columns = [c.replace("_hebrew", "") for c in df.columns]
-    return (  # pylint: disable=no-member
-        df.to_dict(orient="records")
-    )
+    return df.to_dict(orient="records")  # pylint: disable=no-member
 
 
 def get_injured_filters(location_info):
