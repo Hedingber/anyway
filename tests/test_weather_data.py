@@ -73,7 +73,7 @@ class TestWeatherData:
         filters = (
             AccidentMarker.id.in_([old_accident_marker_id, new_accident_marker_id]),
         )
-        filter_date = '01-01-2015'
+        filter_date = datetime(year=2015, day=1, month=1)
         number_of_accidents_updated = ensure_accidents_weather_data(filter_date, filters)
 
         # only one accident will be updated since only one is after the filter date

@@ -20,11 +20,6 @@ def ensure_accidents_weather_data(start_date=None, filters=None):
     logging.info(f"Ensuring accidents weather data {start_date} {filters}")
     query = db.session.query(AccidentMarker).filter(AccidentMarker.weather_data == None)
     if start_date:
-        start_date = datetime(
-            day=int(start_date.split("-")[0]),
-            month=int(start_date.split("-")[1]),
-            year=int(start_date.split("-")[2]),
-        )
         query = query.filter(AccidentMarker.created > start_date)
     if filters is not None:
         query = query.filter(*filters)
