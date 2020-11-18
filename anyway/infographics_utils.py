@@ -49,6 +49,7 @@ class WidgetId(Enum):
     vision_zero = auto()
     accident_count_by_driver_type = auto()
     accident_count_by_car_type = auto()
+    rain_accidents_by_severity = auto()
     injured_accidents_with_pedestrians = auto()
     accident_severity_by_cross_location = auto()
     motorcycle_accidents_vs_all_accidents = auto()
@@ -1045,17 +1046,20 @@ class PedestrianInjuredInJunctionsWidget(Widget):
 class AccidentCausedByRainWidget(Widget):
     # the rain rate threshold after which we count the accident as a cause of the rain
     ACCIDENT_RAIN_RATE_THRESHOLD = 4
-    name = "rain_accidents_by_severity"
 
     def __init__(self, request_params: RequestParams):
-        super().__init__(request_params, WidgetId.accident_count_by_car_type)
+        super().__init__(request_params, WidgetId.rain_accidents_by_severity)
         self.rank = 24
         self.text = {
-            "title": "תאונות שהתרחשו בזמן גשם במקטע " + location_info["road_segment_name"]
+            "title": "תאונות שהתרחשו בזמן גשם במקטע " + self.request_params.location_info["road_segment_name"]
         }
 
     def generate_items(self) -> None:
-        self.items = AccidentCountByCarTypeWidget.stats_accidents_caused_by_rain_by_severity(location_info, start_time, end_time)
+        self.items = AccidentCountByCarTypeWidget.stats_accidents_caused_by_rain_by_severity(
+            self.request_params.location_info,
+            self.request_params.start_time,
+            self.request_params.end_time
+        )
 
     @staticmethod
     def stats_accidents_caused_by_rain_by_severity(location_info, start_time, end_time):
@@ -1075,7 +1079,7 @@ class AccidentCausedByRainWidget(Widget):
             severity_hebrew = accident["accident_severity_hebrew"]
             severity_to_severity_hebrew[severity] = severity_hebrew
             accidents_by_severity[severity] += 1
-            if accident["accident_rain_rate"] > ACCIDENT_RAIN_RATE_THRESHOLD:
+            if accident["accident_rain_rate"] > AccidentCausedByRainWidget.ACCIDENT_RAIN_RATE_THRESHOLD:
                 rain_accidents_by_severity[severity] += 1
 
         stats = []
